@@ -18,7 +18,7 @@
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden}
 
-#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+#bgCanvas{position:fixed;inset:0;z-index:2;pointer-events:none}
 
 /* INTRO */
 #intro{
@@ -76,7 +76,7 @@ nav{
 
 /* HERO */
 #hero{
-  position:relative;z-index:1;min-height:100vh;
+  position:relative;z-index:3;min-height:100vh;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;padding:100px clamp(20px,5vw,60px) 80px;
   background:radial-gradient(ellipse 140% 100% at 50% 60%,#1a1a3e 0%,#0d0d2b 45%,#050510 100%);
@@ -143,7 +143,7 @@ nav{
   51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 
 /* SECTIONS */
-section{position:relative;z-index:1;padding:clamp(60px,8vw,110px) clamp(20px,5vw,60px)}
+section{position:relative;z-index:3;padding:clamp(60px,8vw,110px) clamp(20px,5vw,60px)}
 .wrap{max-width:1080px;margin:0 auto}
 .slbl{font-size:10px;letter-spacing:6px;color:var(--gold);text-align:center;margin-bottom:10px;opacity:.7}
 .sroman{font-family:'Russo One',sans-serif;font-size:10px;letter-spacing:6px;
@@ -434,7 +434,7 @@ footer{background:#03030c;border-top:1px solid rgba(255,170,48,.07);
       <div class="pmeta">
         <span><strong>Ingangsdatum:</strong> 2 april 2026</span>
         <span><strong>App:</strong> Card Ruins</span>
-        <span><strong>Ontwikkelaar:</strong> Izaak Elia</span>
+        <span><strong>Ontwikkelaar:</strong> Card Ruins</span>
       </div>
       <h3>1. Welke gegevens we verzamelen</h3>
       <ul>
@@ -456,7 +456,7 @@ footer{background:#03030c;border-top:1px solid rgba(255,170,48,.07);
       <h3>5. Kinderen</h3>
       <p>Card Ruins is bestemd voor spelers van alle leeftijden (3+). We verzamelen bewust geen gegevens van kinderen onder de 13 jaar anders dan beschreven in dit beleid.</p>
       <h3>6. Jouw rechten</h3>
-      <p>Je hebt het recht om jouw gegevens in te zien, te corrigeren of te laten verwijderen. Neem contact op via <a href="mailto:cardruins@gmail.com">cardruins@gmail.com</a>.</p>
+      <p>Je hebt het recht om jouw gegevens in te zien, te corrigeren of te laten verwijderen. Neem contact op via <a href="/cdn-cgi/l/email-protection#442725362036312d2a37042329252d286a272b29"><span class="__cf_email__" data-cfemail="8deeecffe9fff8e4e3fecdeae0ece4e1a3eee2e0">[email&#160;protected]</span></a>.</p>
       <h3>7. Wijzigingen</h3>
       <p>Wijzigingen worden op deze pagina gepubliceerd met een nieuwe ingangsdatum.</p>
     </div>
@@ -471,7 +471,7 @@ footer{background:#03030c;border-top:1px solid rgba(255,170,48,.07);
     <div class="sdiv rev"></div>
     <div class="cbox rev">
       <p>Bug gevonden, vraag of gewoon hallo? We horen graag van je!</p>
-      <a href="mailto:cardruins@gmail.com" class="clink">cardruins@gmail.com</a>
+      <a href="/cdn-cgi/l/email-protection#80e3e1f2e4f2f5e9eef3c0e7ede1e9ecaee3efed" class="clink"><span class="__cf_email__" data-cfemail="dfbcbeadbbadaab6b1ac9fb8b2beb6b3f1bcb0b2">[email&#160;protected]</span></a>
     </div>
   </div>
 </section>
@@ -486,11 +486,11 @@ footer{background:#03030c;border-top:1px solid rgba(255,170,48,.07);
       <a href="#privacy">V · PRIVACY</a>
       <a href="#contact">VI · CONTACT</a>
     </nav>
-    <div class="fcopy">© 2026 Izaak Elia</div>
+    <div class="fcopy">© 2026 Card Ruins</div>
   </div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // INTRO
 setTimeout(()=>document.getElementById('intro').classList.add('gone'), 2900);
 
@@ -529,20 +529,4 @@ function draw(){
     cx.fillText(p.s,0,0);cx.restore();
     p.x+=p.vx;p.y+=p.vy;p.r+=p.rv;
     if(p.y<-40){p.y=cv.height+40;p.x=Math.random()*cv.width}
-    if(p.x<-40)p.x=cv.width+40;
-    if(p.x>cv.width+40)p.x=-40;
-  });
-  requestAnimationFrame(draw);
-}
-draw();
-
-// SCROLL REVEAL
-const obs=new IntersectionObserver((entries)=>{
-  entries.forEach((e,i)=>{
-    if(e.isIntersecting)setTimeout(()=>e.target.classList.add('up'),i*75);
-  });
-},{threshold:.1});
-document.querySelectorAll('.rev,.revl,.revr').forEach(el=>obs.observe(el));
-</script>
-</body>
-</html>
+    if(p.x<-40)p.x=cv.width+
