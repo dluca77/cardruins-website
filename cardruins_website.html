@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Card Ruins — Beat the Deck</title>
+<meta name="description" content="Card Ruins is een verslavend TriPeaks solitairespel met een episch ruïnethema. Gratis te spelen op iOS en Android."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --gold:#ffaa30;--gold-light:#ffe080;--gold-dim:rgba(255,170,48,0.5);
+  --bg:#05051a;--bg2:#0d0d2b;--text:#e0e8ff;--text-dim:rgba(220,210,180,0.75);
+  --accent:#60c0ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden}
+
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* INTRO */
+#intro{
+  position:fixed;inset:0;z-index:1000;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity 0.8s ease,visibility 0.8s ease;
+}
+#intro.gone{opacity:0;visibility:hidden}
+.il{font-family:'Russo One',sans-serif;font-size:clamp(32px,7vw,80px);letter-spacing:8px;
+  opacity:0;transform:scale(0.8);animation:iScale 0.9s 0.3s cubic-bezier(.34,1.4,.64,1) forwards}
+.il span{color:var(--gold);text-shadow:0 0 40px rgba(255,170,48,0.6)}
+.it{font-style:italic;font-size:14px;letter-spacing:5px;color:var(--text-dim);
+  opacity:0;animation:iFade 0.7s 1s ease forwards}
+.ib{width:180px;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;
+  opacity:0;animation:iFade 0.5s 1.3s ease forwards}
+.ibf{height:100%;width:0;background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  animation:iLoad 1.1s 1.5s ease forwards}
+@keyframes iScale{to{opacity:1;transform:scale(1)}}
+@keyframes iFade{to{opacity:1}}
+@keyframes iLoad{to{width:100%}}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 clamp(16px,4vw,60px);height:62px;
+  background:rgba(5,5,26,0.82);backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(255,170,48,0.1);
+  opacity:0;animation:iFade 0.5s 2.9s ease forwards;
+}
+.nlogo{font-family:'Russo One',sans-serif;font-size:17px;letter-spacing:4px;
+  color:var(--gold);text-shadow:0 0 20px rgba(255,170,48,0.3);text-decoration:none}
+.nlinks{display:flex;gap:clamp(14px,2.5vw,36px);list-style:none}
+.nlinks a{color:var(--text-dim);text-decoration:none;font-size:11px;letter-spacing:2.5px;
+  font-weight:700;transition:color 0.2s;position:relative;padding-bottom:2px}
+.nlinks a::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:var(--gold);transform:scaleX(0);transition:transform 0.2s}
+.nlinks a:hover{color:var(--gold)}.nlinks a:hover::after{transform:scaleX(1)}
+.ncta{background:linear-gradient(135deg,rgba(100,50,0,.9),rgba(60,28,0,.95))!important;
+  border:1px solid rgba(255,160,40,.4)!important;border-radius:8px!important;
+  padding:7px 18px!important;color:var(--gold-light)!important;
+  font-family:'Russo One',sans-serif!important;letter-spacing:2px!important}
+.ncta::after{display:none!important}
+.ncta:hover{box-shadow:0 0 20px rgba(255,150,30,.3)!important;transform:translateY(-1px)}
+.hbg{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
+.hbg span{width:22px;height:2px;background:var(--gold);border-radius:2px;transition:all .3s}
+.mmenu{display:none;position:fixed;top:62px;left:0;right:0;z-index:99;
+  background:rgba(5,5,26,.97);backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(255,170,48,.1);flex-direction:column;padding:16px;gap:2px}
+.mmenu.open{display:flex}
+.mmenu a{color:var(--text-dim);text-decoration:none;font-size:13px;letter-spacing:3px;
+  font-weight:700;padding:11px 16px;border-radius:8px;transition:background .2s,color .2s}
+.mmenu a:hover{background:rgba(255,170,48,.07);color:var(--gold)}
+
+/* HERO */
+#hero{
+  position:relative;z-index:1;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:100px clamp(20px,5vw,60px) 80px;
+  background:radial-gradient(ellipse 140% 100% at 50% 60%,#1a1a3e 0%,#0d0d2b 45%,#050510 100%);
+}
+#hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:200px;
+  background:linear-gradient(transparent,var(--bg));pointer-events:none}
+
+.hroman{font-family:'Russo One',sans-serif;font-size:10px;letter-spacing:8px;
+  color:var(--gold-dim);margin-bottom:20px;
+  opacity:0;animation:iFade 0.5s 2.7s ease forwards}
+.hiwrap{position:relative;margin-bottom:28px;
+  opacity:0;animation:hIn 0.8s 2.8s cubic-bezier(.34,1.3,.64,1) forwards}
+@keyframes hIn{from{opacity:0;transform:scale(0.6) translateY(20px)}to{opacity:1;transform:none}}
+.hicon{width:clamp(110px,16vw,170px);height:clamp(110px,16vw,170px);
+  border-radius:clamp(22px,4vw,38px);display:block;
+  box-shadow:0 24px 80px rgba(0,0,0,.8),0 0 80px rgba(255,150,30,.2)}
+.hring{position:absolute;inset:-12px;border-radius:clamp(30px,5vw,50px);
+  border:1px solid rgba(255,170,48,.2);animation:ring 3s ease-in-out infinite}
+@keyframes ring{0%,100%{transform:scale(1);opacity:.3}50%{transform:scale(1.05);opacity:.7}}
+.htitle{font-family:'Russo One',sans-serif;
+  font-size:clamp(52px,11vw,116px);letter-spacing:clamp(4px,1vw,12px);line-height:.9;
+  opacity:0;animation:iFade 0.6s 3s ease forwards}
+.hruins{color:var(--gold);display:block;
+  text-shadow:0 0 60px rgba(255,170,48,.4),0 0 120px rgba(255,170,48,.15);
+  animation:rglow 2.5s ease-in-out infinite}
+@keyframes rglow{0%,100%{text-shadow:0 0 60px rgba(255,170,48,.4)}
+  50%{text-shadow:0 0 80px rgba(255,200,80,.6),0 0 140px rgba(255,170,48,.25)}}
+.hdiv{width:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,170,48,.5),transparent);
+  margin:18px auto;animation:dExp 0.7s 3.3s ease forwards}
+@keyframes dExp{to{width:180px}}
+.htagline{font-style:italic;font-size:clamp(13px,2vw,18px);letter-spacing:4px;
+  color:var(--text-dim);margin-bottom:44px;opacity:0;animation:iFade 0.5s 3.4s ease forwards}
+.hbtns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;
+  opacity:0;animation:iFade 0.5s 3.6s ease forwards}
+
+.btn{display:flex;align-items:center;gap:11px;
+  padding:clamp(11px,1.8vw,15px) clamp(18px,2.8vw,30px);
+  border-radius:13px;text-decoration:none;
+  font-family:'Russo One',sans-serif;font-size:clamp(12px,1.4vw,14px);
+  letter-spacing:1px;transition:transform .2s,box-shadow .2s;
+  position:relative;overflow:hidden}
+.btn::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.08),transparent);
+  opacity:0;transition:opacity .2s}
+.btn:hover::before{opacity:1}.btn:hover{transform:translateY(-3px)}
+.bios{background:linear-gradient(135deg,#1c1c1e,#0d0d0f);
+  border:1px solid rgba(255,255,255,.18);color:#fff;
+  box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.bios:hover{box-shadow:0 16px 48px rgba(0,0,0,.7),0 0 24px rgba(255,255,255,.07)}
+.band{background:linear-gradient(135deg,rgba(100,50,0,.9),rgba(60,28,0,.95));
+  border:1px solid rgba(255,160,40,.45);color:var(--gold-light);
+  box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 24px rgba(255,140,30,.15)}
+.band:hover{box-shadow:0 16px 48px rgba(0,0,0,.7),0 0 40px rgba(255,150,30,.3)}
+.bico{font-size:clamp(18px,2.5vw,24px)}
+.btxt{display:flex;flex-direction:column;text-align:left}
+.btxt small{font-size:9px;letter-spacing:2px;opacity:.6;font-family:'Rajdhani',sans-serif;font-weight:600}
+.scrlhint{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  opacity:0;animation:iFade 0.5s 4.1s ease forwards}
+.scrlhint span{font-size:9px;letter-spacing:5px;color:var(--gold-dim)}
+.sarrow{width:1px;height:36px;background:linear-gradient(var(--gold-dim),transparent);
+  animation:sdrop 1.5s ease-in-out infinite}
+@keyframes sdrop{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}
+  51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* SECTIONS */
+section{position:relative;z-index:1;padding:clamp(60px,8vw,110px) clamp(20px,5vw,60px)}
+.wrap{max-width:1080px;margin:0 auto}
+.slbl{font-size:10px;letter-spacing:6px;color:var(--gold);text-align:center;margin-bottom:10px;opacity:.7}
+.sroman{font-family:'Russo One',sans-serif;font-size:10px;letter-spacing:6px;
+  color:rgba(255,170,48,.22);text-align:center;margin-bottom:6px}
+.stitle{font-family:'Russo One',sans-serif;font-size:clamp(22px,4vw,46px);
+  letter-spacing:3px;text-align:center;margin-bottom:14px}
+.stitle em{color:var(--gold);font-style:normal}
+.sdiv{width:54px;height:1px;margin:0 auto 56px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+
+/* ABOUT */
+#about{background:linear-gradient(180deg,#050510 0%,#0a0a20 50%,#050510 100%)}
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,5vw,80px);align-items:center}
+.alead{font-size:clamp(14px,1.8vw,17px);line-height:1.9;color:var(--text-dim);margin-bottom:20px}
+.alead strong{color:var(--gold)}
+.aquote{font-style:italic;font-size:clamp(15px,2.2vw,21px);color:rgba(255,170,48,.7);
+  letter-spacing:1px;border-left:2px solid rgba(255,170,48,.3);padding-left:18px;line-height:1.7}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fc{background:linear-gradient(135deg,rgba(40,20,0,.7),rgba(20,10,0,.85));
+  border:1px solid rgba(200,130,40,.17);border-radius:12px;
+  padding:clamp(13px,2vw,20px);
+  transition:border-color .25s,transform .25s,box-shadow .25s;cursor:default}
+.fc:hover{border-color:rgba(255,170,48,.4);transform:translateY(-4px);
+  box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 18px rgba(255,150,30,.1)}
+.fco{font-size:clamp(20px,2.8vw,28px);margin-bottom:7px}
+.fnum{font-family:'Russo One',sans-serif;font-size:9px;letter-spacing:3px;
+  color:rgba(255,170,48,.35);margin-bottom:3px}
+.fn{font-family:'Russo One',sans-serif;font-size:clamp(10px,1.2vw,12px);
+  letter-spacing:1px;color:var(--gold-light);margin-bottom:5px}
+.fd{font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);line-height:1.5}
+
+/* SCREENSHOTS */
+#screenshots{background:#050510;overflow:hidden;padding-bottom:0}
+.sst{display:flex;gap:clamp(10px,1.8vw,18px);overflow-x:auto;
+  padding:16px 0 clamp(36px,5vw,56px);scrollbar-width:thin;
+  scrollbar-color:var(--gold-dim) transparent;-webkit-overflow-scrolling:touch}
+.sst::-webkit-scrollbar{height:3px}
+.sst::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px}
+.ssimg{flex-shrink:0;width:clamp(150px,20vw,230px);
+  border-radius:clamp(13px,2vw,20px);border:1px solid rgba(255,170,48,.14);
+  box-shadow:0 12px 40px rgba(0,0,0,.7);
+  transition:transform .3s,box-shadow .3s,border-color .3s;display:block}
+.ssimg:hover{transform:scale(1.06) translateY(-10px) rotate(-1deg);
+  box-shadow:0 28px 70px rgba(0,0,0,.8),0 0 36px rgba(255,170,48,.14);
+  border-color:rgba(255,170,48,.38)}
+
+/* LEVELS */
+#levels{background:linear-gradient(180deg,#050510,#0a0a1e,#050510)}
+.lvlrow{display:flex;gap:clamp(7px,1.4vw,14px);justify-content:center;flex-wrap:wrap}
+.lb{width:clamp(50px,7.5vw,70px);height:clamp(50px,7.5vw,70px);
+  border-radius:10px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;cursor:default;
+  background:linear-gradient(145deg,rgba(30,30,90,.8),rgba(15,15,55,.9),rgba(8,8,35,.95));
+  border:1px solid rgba(80,100,255,.22);
+  transition:transform .15s,box-shadow .15s,border-color .15s}
+.lb:hover{transform:scale(1.13);box-shadow:0 8px 24px rgba(0,0,40,.7);border-color:rgba(100,140,255,.5)}
+.lb.med{border-color:rgba(100,200,255,.28)}.lb.hrd{border-color:rgba(200,80,255,.28)}
+.lb.lck{opacity:.4;filter:grayscale(.5)}
+.lnum{font-family:'Russo One',sans-serif;font-size:clamp(14px,2.2vw,20px);color:#c0d0ff}
+.lb.med .lnum{color:#60d0ff}.lb.hrd .lnum{color:#d080ff}
+.llbl{font-size:7px;letter-spacing:1px;color:rgba(255,255,255,.28);font-family:'Russo One',sans-serif}
+
+/* DOWNLOAD */
+#download{background:radial-gradient(ellipse 120% 80% at 50% 50%,#1a1a3e 0%,#050510 100%);text-align:center}
+.qrow{display:flex;gap:clamp(20px,4vw,56px);justify-content:center;flex-wrap:wrap;margin-top:56px}
+.qcard{background:linear-gradient(160deg,rgba(40,20,0,.8),rgba(20,10,0,.9));
+  border:1px solid rgba(200,130,40,.23);border-radius:20px;
+  padding:clamp(22px,4vw,42px);
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+  min-width:clamp(190px,26vw,254px);
+  transition:transform .25s,box-shadow .25s,border-color .25s}
+.qcard:hover{transform:translateY(-8px);
+  box-shadow:0 24px 60px rgba(0,0,0,.7),0 0 48px rgba(255,150,30,.13);
+  border-color:rgba(255,170,48,.38)}
+.qplat{font-family:'Russo One',sans-serif;font-size:clamp(11px,1.4vw,14px);
+  letter-spacing:3px;color:var(--gold)}
+.qbox{width:clamp(90px,12vw,130px);height:clamp(90px,12vw,130px);
+  background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:#333;text-align:center;padding:10px;
+  font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:1px;line-height:1.5}
+.qsub{font-size:11px;color:var(--text-dim);letter-spacing:1px}
+
+/* PRIVACY */
+#privacy{background:linear-gradient(180deg,#050510,#08081a,#050510)}
+.pbox{background:rgba(8,8,28,.8);border:1px solid rgba(96,192,255,.1);
+  border-radius:18px;padding:clamp(22px,5vw,56px);max-width:780px;margin:0 auto}
+.pbox h3{font-family:'Russo One',sans-serif;font-size:clamp(12px,1.7vw,15px);
+  letter-spacing:2px;color:var(--accent);margin:26px 0 9px}
+.pbox h3:first-child{margin-top:0}
+.pbox p,.pbox li{font-size:clamp(13px,1.4vw,15px);line-height:1.9;color:var(--text-dim);margin-bottom:7px}
+.pbox ul{padding-left:20px;margin-bottom:12px}
+.pbox a{color:var(--accent);text-decoration:none}.pbox a:hover{text-decoration:underline}
+.pmeta{display:flex;gap:20px;flex-wrap:wrap;background:rgba(255,170,48,.05);
+  border:1px solid rgba(255,170,48,.1);border-radius:9px;
+  padding:13px 18px;margin-bottom:26px;font-size:11px;letter-spacing:1px;color:var(--text-dim)}
+.pmeta strong{color:var(--gold)}
+
+/* CONTACT */
+#contact{background:#050510;text-align:center}
+.cbox{background:linear-gradient(135deg,rgba(40,20,0,.7),rgba(20,10,0,.85));
+  border:1px solid rgba(200,130,40,.2);border-radius:18px;
+  padding:clamp(28px,5vw,52px);max-width:460px;margin:0 auto}
+.cbox p{color:var(--text-dim);font-size:16px;line-height:1.9;margin-bottom:26px}
+.clink{display:inline-block;color:var(--gold);
+  font-family:'Russo One',sans-serif;font-size:clamp(12px,1.8vw,15px);
+  letter-spacing:2px;text-decoration:none;
+  border-bottom:1px solid rgba(255,170,48,.3);padding-bottom:3px;transition:color .2s,border-color .2s}
+.clink:hover{color:var(--gold-light);border-color:var(--gold)}
+
+/* FOOTER */
+footer{background:#03030c;border-top:1px solid rgba(255,170,48,.07);
+  padding:clamp(18px,3vw,28px) clamp(20px,4vw,60px)}
+.fi{max-width:1080px;margin:0 auto;display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:14px}
+.flogo{font-family:'Russo One',sans-serif;font-size:13px;letter-spacing:4px;color:rgba(255,170,48,.38)}
+.fnav{display:flex;gap:clamp(10px,2vw,22px);flex-wrap:wrap}
+.fnav a{font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.22);
+  text-decoration:none;transition:color .2s}.fnav a:hover{color:var(--gold)}
+.fcopy{font-size:11px;letter-spacing:1px;color:rgba(255,255,255,.14)}
+
+/* REVEAL */
+.rev{opacity:0;transform:translateY(34px);transition:opacity .7s ease,transform .7s ease}
+.revl{opacity:0;transform:translateX(-34px);transition:opacity .7s ease,transform .7s ease}
+.revr{opacity:0;transform:translateX(34px);transition:opacity .7s ease,transform .7s ease}
+.rev.up,.revl.up,.revr.up{opacity:1;transform:none}
+
+/* RESPONSIVE */
+@media(max-width:880px){.agrid{grid-template-columns:1fr}}
+@media(max-width:620px){
+  .nlinks{display:none}.hbg{display:flex}
+  .hbtns{flex-direction:column;align-items:center}
+  .btn{width:230px;justify-content:center}
+  .fi{flex-direction:column;text-align:center}
+  .fnav{justify-content:center}
+}
+@media(max-width:380px){.fgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <div class="il">CARD <span>RUINS</span></div>
+  <div class="it">beat the deck · beat the world</div>
+  <div class="ib"><div class="ibf"></div></div>
+</div>
+
+<canvas id="bgCanvas"></canvas>
+
+<nav>
+  <a href="#hero" class="nlogo">CARD RUINS</a>
+  <ul class="nlinks">
+    <li><a href="#about">I · OVER</a></li>
+    <li><a href="#screenshots">II · GAMEPLAY</a></li>
+    <li><a href="#levels">III · LEVELS</a></li>
+    <li><a href="#download">IV · DOWNLOAD</a></li>
+    <li><a href="#privacy">V · PRIVACY</a></li>
+    <li><a href="#download" class="ncta">SPEEL NU</a></li>
+  </ul>
+  <div class="hbg" id="hbg" onclick="tM()"><span></span><span></span><span></span></div>
+</nav>
+<div class="mmenu" id="mm">
+  <a href="#about" onclick="cM()">I · OVER DE GAME</a>
+  <a href="#screenshots" onclick="cM()">II · GAMEPLAY</a>
+  <a href="#levels" onclick="cM()">III · LEVELS</a>
+  <a href="#download" onclick="cM()">IV · DOWNLOAD</a>
+  <a href="#privacy" onclick="cM()">V · PRIVACY</a>
+  <a href="#contact" onclick="cM()">VI · CONTACT</a>
+</div>
+
+<section id="hero">
+  <div class="hroman">CARD RUINS · EST. MMXXVI</div>
+  <div class="hiwrap">
+    <img src="icon_512x512.png" alt="Card Ruins" class="hicon" onerror="this.style.display='none'"/>
+    <div class="hring"></div>
+  </div>
+  <h1 class="htitle">CARD<span class="hruins">RUINS</span></h1>
+  <div class="hdiv"></div>
+  <p class="htagline">Beat the deck. Beat the world.</p>
+  <div class="hbtns">
+    <a href="#" class="btn bios">
+      <span class="bico">🍎</span>
+      <span class="btxt"><small>DOWNLOAD OP DE</small>App Store</span>
+    </a>
+    <a href="#" class="btn band">
+      <span class="bico">▶</span>
+      <span class="btxt"><small>BESCHIKBAAR OP</small>Google Play</span>
+    </a>
+  </div>
+  <div class="scrlhint"><span>SCROLL</span><div class="sarrow"></div></div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <p class="sroman rev">— I —</p>
+    <p class="slbl rev">HET SPEL</p>
+    <h2 class="stitle rev">Wat is <em>Card Ruins</em>?</h2>
+    <div class="sdiv rev"></div>
+    <div class="agrid">
+      <div class="revl">
+        <p class="alead">Card Ruins is een verslavend <strong>TriPeaks solitairespel</strong> met een episch Egyptisch ruïnethema. Leg kaarten die één hoger of lager zijn dan de bovenste kaart, bouw langere combo's voor hogere scores en leeg alle drie de piramides.</p>
+        <p class="alead">Met <strong>10 uitdagende levels</strong> en toenemende moeilijkheid test Card Ruins je strategie én reflexen. Vergelijk je score live met spelers wereldwijd.</p>
+        <p class="aquote">"Beat the deck.<br/>Schrijf je naam in de eeuwige highscores."</p>
+      </div>
+      <div class="fgrid revr">
+        <div class="fc"><div class="fco">🃏</div><div class="fnum">I</div><div class="fn">10 LEVELS</div><div class="fd">Elk level uitdagender. Haal je level XI?</div></div>
+        <div class="fc"><div class="fco">🏆</div><div class="fnum">II</div><div class="fn">WERELDRANKING</div><div class="fd">Live highscores. Jouw naam tussen de besten.</div></div>
+        <div class="fc"><div class="fco">🔥</div><div class="fnum">III</div><div class="fn">COMBO ANIMATIES</div><div class="fd">Ninja, smash, burn, glitch.</div></div>
+        <div class="fc"><div class="fco">🥇</div><div class="fnum">IV</div><div class="fn">XXX ACHIEVEMENTS</div><div class="fd">30 badges. Ontgrendel geheimen.</div></div>
+        <div class="fc"><div class="fco">⚡</div><div class="fnum">V</div><div class="fn">TIJDBONUS</div><div class="fd">Speel snel. Elke seconde telt.</div></div>
+        <div class="fc"><div class="fco">🆓</div><div class="fnum">VI</div><div class="fn">GRATIS</div><div class="fd">Volledig gratis. Geen verplichte aankopen.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="screenshots">
+  <div class="wrap">
+    <p class="sroman rev">— II —</p>
+    <p class="slbl rev">GAMEPLAY</p>
+    <h2 class="stitle rev">Bekijk het <em>in actie</em></h2>
+    <div class="sdiv rev"></div>
+  </div>
+  <div class="sst rev">
+    <img src="screenshots/screen1.png" alt="Hoofdmenu" class="ssimg"/>
+    <img src="screenshots/screen2.png" alt="Gameplay" class="ssimg"/>
+    <img src="screenshots/screen3.png" alt="Combo" class="ssimg"/>
+    <img src="screenshots/screen4.png" alt="Achievements" class="ssimg"/>
+    <img src="screenshots/screen5.png" alt="Level 2" class="ssimg"/>
+  </div>
+</section>
+
+<section id="levels">
+  <div class="wrap">
+    <p class="sroman rev">— III —</p>
+    <p class="slbl rev">UITDAGING</p>
+    <h2 class="stitle rev"><em>X</em> Levels. Eén kampioen.</h2>
+    <div class="sdiv rev"></div>
+    <div class="lvlrow rev">
+      <div class="lb"><div class="lnum">I</div><div class="llbl">LVL 1</div></div>
+      <div class="lb"><div class="lnum">II</div><div class="llbl">LVL 2</div></div>
+      <div class="lb"><div class="lnum">III</div><div class="llbl">LVL 3</div></div>
+      <div class="lb med"><div class="lnum">IV</div><div class="llbl">LVL 4</div></div>
+      <div class="lb med"><div class="lnum">V</div><div class="llbl">LVL 5</div></div>
+      <div class="lb med"><div class="lnum">VI</div><div class="llbl">LVL 6</div></div>
+      <div class="lb med"><div class="lnum">VII</div><div class="llbl">LVL 7</div></div>
+      <div class="lb hrd"><div class="lnum">VIII</div><div class="llbl">LVL 8</div></div>
+      <div class="lb hrd"><div class="lnum">IX</div><div class="llbl">LVL 9</div></div>
+      <div class="lb hrd"><div class="lnum">X</div><div class="llbl">LVL 10</div></div>
+      <div class="lb lck"><div class="lnum" style="font-size:16px">🔒</div><div class="llbl">LVL XI</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <p class="sroman rev">— IV —</p>
+    <p class="slbl rev">GRATIS SPELEN</p>
+    <h2 class="stitle rev">Download <em>Card Ruins</em></h2>
+    <div class="sdiv rev"></div>
+    <div class="qrow">
+      <div class="qcard rev">
+        <div class="qplat">🍎 APP STORE</div>
+        <div class="qbox">QR CODE<br/>BINNENKORT<br/>BESCHIKBAAR</div>
+        <a href="#" class="btn bios" style="width:100%;justify-content:center">
+          <span class="bico">🍎</span><span class="btxt"><small>DOWNLOAD OP DE</small>App Store</span>
+        </a>
+        <p class="qsub">iOS 14+ vereist</p>
+      </div>
+      <div class="qcard rev">
+        <div class="qplat">▶ GOOGLE PLAY</div>
+        <div class="qbox">QR CODE<br/>BINNENKORT<br/>BESCHIKBAAR</div>
+        <a href="#" class="btn band" style="width:100%;justify-content:center">
+          <span class="bico">▶</span><span class="btxt"><small>BESCHIKBAAR OP</small>Google Play</span>
+        </a>
+        <p class="qsub">Android 7.0+ vereist</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap">
+    <p class="sroman rev">— V —</p>
+    <p class="slbl rev">JURIDISCH</p>
+    <h2 class="stitle rev"><em>Privacy</em> Policy</h2>
+    <div class="sdiv rev"></div>
+    <div class="pbox rev">
+      <div class="pmeta">
+        <span><strong>Ingangsdatum:</strong> 2 april 2026</span>
+        <span><strong>App:</strong> Card Ruins</span>
+        <span><strong>Ontwikkelaar:</strong> Izaak Elia</span>
+      </div>
+      <h3>1. Welke gegevens we verzamelen</h3>
+      <ul>
+        <li><strong>Highscores</strong> — naam en score opgeslagen via Supabase voor de wereldwijde ranglijst.</li>
+        <li><strong>Gameplay statistieken</strong> — anonieme gegevens lokaal opgeslagen op je apparaat.</li>
+        <li><strong>Advertentiegegevens</strong> — Google AdMob kan apparaat-ID's verzamelen voor advertenties.</li>
+        <li><strong>Analytische gegevens</strong> — anonieme gebruiksstatistieken via Google Analytics.</li>
+      </ul>
+      <h3>2. Hoe we gegevens gebruiken</h3>
+      <ul>
+        <li>Highscores tonen op de wereldwijde ranglijst</li>
+        <li>De app verbeteren op basis van anonieme statistieken</li>
+        <li>Relevante advertenties tonen via Google AdMob</li>
+      </ul>
+      <h3>3. Delen van gegevens</h3>
+      <p>We delen geen persoonlijke gegevens met derden, behalve <strong>Google AdMob</strong> (<a href="https://policies.google.com/privacy" target="_blank">privacybeleid</a>) en <strong>Supabase</strong> (<a href="https://supabase.com/privacy" target="_blank">privacybeleid</a>).</p>
+      <h3>4. Gegevensopslag</h3>
+      <p>Lokale gegevens worden verwijderd als je de app verwijdert. Highscores op de server worden bewaard zolang de app actief is.</p>
+      <h3>5. Kinderen</h3>
+      <p>Card Ruins is bestemd voor spelers van alle leeftijden (3+). We verzamelen bewust geen gegevens van kinderen onder de 13 jaar anders dan beschreven in dit beleid.</p>
+      <h3>6. Jouw rechten</h3>
+      <p>Je hebt het recht om jouw gegevens in te zien, te corrigeren of te laten verwijderen. Neem contact op via <a href="mailto:cardruins@gmail.com">cardruins@gmail.com</a>.</p>
+      <h3>7. Wijzigingen</h3>
+      <p>Wijzigingen worden op deze pagina gepubliceerd met een nieuwe ingangsdatum.</p>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <p class="sroman rev">— VI —</p>
+    <p class="slbl rev">BEREIKBAAR</p>
+    <h2 class="stitle rev">Vragen of <em>feedback</em>?</h2>
+    <div class="sdiv rev"></div>
+    <div class="cbox rev">
+      <p>Bug gevonden, vraag of gewoon hallo? We horen graag van je!</p>
+      <a href="mailto:cardruins@gmail.com" class="clink">cardruins@gmail.com</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="fi">
+    <div class="flogo">CARD RUINS</div>
+    <nav class="fnav">
+      <a href="#about">I · OVER</a>
+      <a href="#screenshots">II · GAMEPLAY</a>
+      <a href="#download">IV · DOWNLOAD</a>
+      <a href="#privacy">V · PRIVACY</a>
+      <a href="#contact">VI · CONTACT</a>
+    </nav>
+    <div class="fcopy">© 2026 Izaak Elia</div>
+  </div>
+</footer>
+
+<script>
+// INTRO
+setTimeout(()=>document.getElementById('intro').classList.add('gone'), 2900);
+
+// MENU
+function tM(){document.getElementById('mm').classList.toggle('open')}
+function cM(){document.getElementById('mm').classList.remove('open')}
+
+// CANVAS PARTICLES
+const cv=document.getElementById('bgCanvas'),cx=cv.getContext('2d');
+function rs(){cv.width=window.innerWidth;cv.height=window.innerHeight}
+rs();window.addEventListener('resize',rs);
+
+const SYM=['♠','♥','♦','♣','A','K','Q','J','✦','⟡','◈','⬡','✧','◆'];
+const pts=Array.from({length:45},()=>({
+  x:Math.random()*window.innerWidth,
+  y:Math.random()*window.innerHeight,
+  vx:(Math.random()-.5)*.35,
+  vy:-(Math.random()*.45+.15),
+  s:SYM[Math.floor(Math.random()*SYM.length)],
+  sz:Math.random()*13+7,
+  a:Math.random()*.22+.04,
+  r:Math.random()*Math.PI*2,
+  rv:(Math.random()-.5)*.012,
+  c:Math.random()>.55
+    ?`rgba(255,${Math.floor(Math.random()*80+110)},30,`
+    :`rgba(${Math.floor(Math.random()*60+170)},${Math.floor(Math.random()*60+190)},255,`
+}));
+
+function draw(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  pts.forEach(p=>{
+    cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);
+    cx.globalAlpha=p.a;cx.fillStyle=p.c+p.a+')';
+    cx.font=`${p.sz}px 'Russo One',sans-serif`;
+    cx.textAlign='center';cx.textBaseline='middle';
+    cx.fillText(p.s,0,0);cx.restore();
+    p.x+=p.vx;p.y+=p.vy;p.r+=p.rv;
+    if(p.y<-40){p.y=cv.height+40;p.x=Math.random()*cv.width}
+    if(p.x<-40)p.x=cv.width+40;
+    if(p.x>cv.width+40)p.x=-40;
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+
+// SCROLL REVEAL
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting)setTimeout(()=>e.target.classList.add('up'),i*75);
+  });
+},{threshold:.1});
+document.querySelectorAll('.rev,.revl,.revr').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
